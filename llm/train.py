@@ -11,13 +11,14 @@ from llm.model import GPT, GPTConfig
 from llm.data import TokenDataset
 
 
-def estimate_loss(model, train_ds, val_ds, batch_size, eval_iters=50):
+def estimate_loss(model, train_ds, val_ds, train_batch_size, eval_batch_size=4, eval_iters=20):
+
     model.eval()
     out = {}
     for split_name, ds in [("train", train_ds), ("val", val_ds)]:
         losses = []
         for _ in range(eval_iters):
-            x, y = ds.get_batch(batch_size)
+            x, y = ds.get_batch(eval_batch_size)
             _, loss = model(x, y)
             losses.append(loss.item())
         out[split_name] = sum(losses) / len(losses)
@@ -111,7 +112,7 @@ def main():
 
         # eval
         if step % args.eval_interval == 0 or step == 1:
-            losses = estimate_loss(model, train_ds, val_ds, args.batch_size, args.eval_iters)
+            losses = estimate_loss(model, train_ds, val_ds, args.batch_size, eval_batch_size=4, eval_iters=args.eval_iters)
             dt = time.time() - t0
             print(f"step {step:5d} | train {losses['train']:.4f} | val {losses['val']:.4f} | last {loss.item():.4f} | {dt:.1f}s")
             # save checkpoint
