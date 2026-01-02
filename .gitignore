@@ -1,0 +1,56 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# =========================
+# Virtual environments
+# =========================
+venv/
+.env/
+.venv/
+env/
+
+# =========================
+# Data (DO NOT COMMIT)
+# =========================
+data/*
+!data/README.md
+
+# =========================
+# Model artifacts
+# =========================
+artifacts/
+checkpoints/
+models/
+faiss_index/
+
+# =========================
+# Logs & outputs
+# =========================
+logs/
+outputs/
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# =========================
+# Jupyter / Colab
+# =========================
+.ipynb_checkpoints/
+*.log
+
+# =========================
+# Misc
+# =========================
+*.tmp
+*.bak

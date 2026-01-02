@@ -7,6 +7,32 @@ import os
 
 SPECIAL_TOKENS = ["<pad>", "<bos>", "<eos>", "<unk>"]
 
+
+
+
+def normalize_text(s: str) -> str:
+    # Normalize common unicode punctuation/spaces into plain ASCII equivalents
+        replacements = {
+            "\u00A0": " ",   # non-breaking space
+            "\u2009": " ",   # thin space
+            "\u200A": " ",   # hair space
+            "\u202F": " ",   # narrow no-break space
+            "\u2010": "-",   # hyphen
+            "\u2011": "-",   # non-breaking hyphen
+            "\u2012": "-",   # figure dash
+            "\u2013": "-",   # en dash
+            "\u2014": "-",   # em dash
+            "\u2018": "'",   # left single quote
+            "\u2019": "'",   # right single quote
+            "\u201C": '"',   # left double quote
+            "\u201D": '"',   # right double quote
+            "\u2212": "-",   # minus sign
+            "\ufeff": "",    # BOM / zero-width no-break space
+        }
+        for a, b in replacements.items():
+            s = s.replace(a, b)
+        return s
+
 @dataclass
 class CharTokenizer:
     stoi: Dict[str, int]          # string -> id
@@ -15,6 +41,25 @@ class CharTokenizer:
     bos_token: str = "<bos>"
     eos_token: str = "<eos>"
     unk_token: str = "<unk>"
+
+
+    @classmethod
+    def unk_rate(self, text: str) -> float:
+        text = normalize_text(text)
+        unk_id = self.stoi[self.unk_token]
+        ids = self.encode(text)
+        if not ids:
+            return 0.0
+        return sum(1 for i in ids if i == unk_id) / len(ids)
+
+    
+    @classmethod
+    def find_unknown_chars(self, text: str, max_print: int = 50):
+        text = normalize_text(text)
+        unknown = sorted({ch for ch in text if ch not in self.stoi})
+        print(f"Unknown chars ({len(unknown)}): {unknown[:max_print]}")
+
+
 
     @classmethod
     def from_texts(
@@ -31,6 +76,7 @@ class CharTokenizer:
         """
         char_set = set()
         for t in texts:
+            t = normalize_text(t)
             if not keep_whitespace:
                 t = " ".join(t.split())
             char_set.update(list(t))
@@ -59,7 +105,7 @@ class CharTokenizer:
         for p in paths:
             with open(p, "r", encoding=encoding, errors="replace") as f:
                 if max_chars_per_file is None:
-                    texts.append(f.read())
+                    texts.append(normalize_text(f.read()))
                 else:
                     texts.append(f.read(max_chars_per_file))
         return cls.from_texts(texts, extra_chars=extra_chars, keep_whitespace=keep_whitespace)
